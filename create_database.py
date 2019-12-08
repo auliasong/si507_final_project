@@ -26,7 +26,7 @@ def params_unique_combination(baseurl, params):
     alphabetized_keys = sorted(params.keys())
     res = []
     for k in alphabetized_keys:
-        res.append("{}={}".format(k, params[k]))
+        res.append('{}={}'.format(k, params[k]))
     return baseurl + '?' + "&".join(res)
 
 def get_resp_using_cache(baseurl, params):
@@ -87,15 +87,29 @@ def create_db():
             resp = get_resp_using_cache(baseurl, params)
             if resp['Response'] == "True":
                 if 'BoxOffice' in resp:
-                    box_office = int(resp['BoxOffice'][1:].replace(',', '') if resp['BoxOffice'] != "N/A" else 0)
+                    box_office = int(float(resp['BoxOffice'][1:].replace(',', '') if resp['BoxOffice'] != "N/A" else 0))
                 else:
                     box_office = 0
                 movie_obj = (resp['Title'], resp['Year'], int(resp['Runtime'].split()[0] if resp['Runtime'] != "N/A" else 0), resp['Director'], resp['Genre'], resp['imdbRating'], box_office)
                 cur.execute(insert_into_movies, movie_obj)
 
-    # insert_into_movies = """
-    #     INSERT INTO Articles (sectionId, sectionName, webPublicationDate, title, webUrl, movieId) VALUES (?,?,?,?,?,?);
-    # """
+    insert_into_articles = """
+        INSERT INTO Articles (sectionId, sectionName, webPublicationDate, title, webUrl, movieId) VALUES (?,?,?,?,?,?);
+    """
+    cur.execute("SELECT id, title FROM Movies")
+    data = cur.fetchall()
+    for row in data:
+        baseurl = 'https://content.guardianapis.com/search'
+        params = {
+            'q': row[1].replace(':', ''),
+            'section': 'film',
+            'api-key': Guardian_api_key
+        }
+        resp = get_resp_using_cache(baseurl, params)['response']
+        if 'results' in resp:
+            for result in resp['results']:
+                article_obj = (result['sectionId'], result['sectionName'], result['webPublicationDate'], result['webTitle'], result['webUrl'], row[0])
+                cur.execute(insert_into_articles, article_obj)
     conn.commit()
     conn.close()
 
