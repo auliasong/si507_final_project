@@ -181,7 +181,7 @@ def avg_rating_per_director(order_by="ratings", param="top", limit="10"):
     conn.close()
 
 def interactive_prompt():
-    response = input('Enter a command (type "help" for more info): ')
+    response = input('Enter a command (type "help" for more info, "exit" to quit): ')
     while response != 'exit':
         if response == 'help':
             print(help_text)
@@ -244,7 +244,7 @@ def interactive_prompt():
                 else:
                     print("Invalid command!")
         print()
-        response = input('Enter a command (type "help" for more info): ')
+        response = input('Enter a command (type "help" for more info, "exit" to quit): ')
     print("Bye!")
 
 if __name__=="__main__":
